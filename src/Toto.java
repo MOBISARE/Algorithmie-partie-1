@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import java.io.FileInputStream;
@@ -17,7 +18,7 @@ public class Toto{
 			f.read(data);
 			f.close();
 
-			return new String(data, "UTF-8");
+			return new String(data, StandardCharsets.UTF_8);
 	} catch(Exception ex) {
 		 	ex.printStackTrace();
 		 	return null;
@@ -28,12 +29,11 @@ public class Toto{
 		// String s = "x=1;y=x*2;z=x-y;x=y+z";
 		Vector<Instruction> x = Parser.parse(Objects.requireNonNull(FileToString("prog1")));
 		for(Instruction i: x){
-			if (i instanceof Assign) {
-			Assign a = (Assign) i;
-			System.out.println("La variable " + a.lhs + " reçoit la valeur " + a.rhs);
+			if (i instanceof Assign a) {
+				System.out.println("La variable " + a.lhs + " reçoit la valeur " + a.rhs);
 			} else {
-			AssignOperator a = (AssignOperator) i;
-			System.out.println("On effectue l'opération " + a.op + " aux valeurs " + a.t0  + " et " + a.t1 + " et on stocke le résultat dans " + a.lhs);
+				AssignOperator a = (AssignOperator) i;
+				System.out.println("On effectue l'opération " + a.op + " aux valeurs " + a.t0  + " et " + a.t1 + " et on stocke le résultat dans " + a.lhs);
 			}
 		}
     }
