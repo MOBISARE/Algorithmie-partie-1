@@ -68,6 +68,11 @@ public class Evaluateur {
                         result = operande1 + operande2;
                         break;
                     case "*":
+//                        while (operande2 > 0) {
+//                            if (operande2 % 2 != 0) result = (result + operande1);
+//                            operande2 >>= 1;
+//                            operande1 = (2*operande1);
+//                        }
                         result = operande1 * operande2;
                         break;
                     case "-":
@@ -80,6 +85,10 @@ public class Evaluateur {
 
         // Renvoyez la valeur de la variable x
         if (variables.containsKey("x")) {
+            if (variables.get("x") instanceof Variable) {
+                return variables.get(((Variable) variables.get("x")).getName()).getValue();
+            }
+
             return variables.get("x").getValue();
         } else {
             return 0;
@@ -109,15 +118,20 @@ public class Evaluateur {
             if (i instanceof Assign) {
                 Assign a = (Assign) i;
 
-                if (a.getValue().getValue() == 1) {
-                    variables.put(a.getVariableName(),AbstractValue.UN);
-                } else if (a.getValue().getValue() == 0) {
-                    variables.put(a.getVariableName(),AbstractValue.ZERO);
+                if (a.getValue() instanceof Entier) {
+                    if (a.getValue().getValue() == 1) {
+                        variables.put(a.getVariableName(),AbstractValue.UN);
+                    } else if (a.getValue().getValue() == 0) {
+                        variables.put(a.getVariableName(),AbstractValue.ZERO);
+                    } else {
+                        variables.put(a.getVariableName(), AbstractValue.UNDEFINED);
+                        newInstructions.add(i);
+                    }
                 } else {
-                    variables.put(a.getVariableName(), AbstractValue.UNDEFINED);
+                    String varName = ((Variable)a.getValue()).getName();
+                    variables.put(a.getVariableName(), variables.getOrDefault(varName, AbstractValue.UNDEFINED));
                     newInstructions.add(i);
                 }
-
             } else {
                 AssignOperator ao = (AssignOperator) i;
 
