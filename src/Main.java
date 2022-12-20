@@ -1,5 +1,3 @@
-import java.util.*;
-
 
 public class Main {
 
@@ -7,5 +5,7 @@ public class Main {
 		// String s = "x=1;y=x*2;z=x-y;x=y+z";
 		Evaluateur evaluateur = new Evaluateur("prog1");
         System.out.println(evaluateur.evaluate());
+
+        evaluateur.abstractEvaluate();
     }
 }

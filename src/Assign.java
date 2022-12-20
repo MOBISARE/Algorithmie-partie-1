@@ -17,6 +17,13 @@ class Assign extends Instruction{
 
     @Override
     public String toString() {
+        String var;
+
+        if (rhs instanceof Variable) {
+            var = ((Variable) rhs).getName();
+        } else {
+            var = ((Entier)rhs).getValue() + "";
+        }
         return lhs + "=" + rhs;
     }
 }

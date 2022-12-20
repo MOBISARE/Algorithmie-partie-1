@@ -1,10 +1,12 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Evaluateur {
-    private Vector<Instruction> instructions;
+    private final Vector<Instruction> instructions;
 
     public Evaluateur(String fileName) {
         instructions = Parser.parse(Objects.requireNonNull(FileToString(fileName)));
@@ -16,7 +18,7 @@ public class Evaluateur {
             File file = new File(Objects.requireNonNull(Evaluateur.class.getResource(filename)).toURI());
             FileInputStream f = new FileInputStream(file);
             byte[] data = new byte[(int) file.length()];
-            f.read(data);
+            int res = f.read(data);
             f.close();
 
             return new String(data, StandardCharsets.UTF_8);
@@ -81,6 +83,122 @@ public class Evaluateur {
             return variables.get("x").getValue();
         } else {
             return 0;
+        }
+    }
+
+    public void abstractEvaluate() {
+        Map<String, AbstractValue> variables = new HashMap<>();
+        Vector<Instruction> newInstructions = new Vector<>();
+
+        try {
+            File myFile = new File("./ressources/opt_prog.txt");
+
+            if (myFile.exists()) {
+                myFile.delete();
+                myFile.createNewFile();
+            } else {
+                myFile.createNewFile();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        for(Instruction i: instructions) {
+            if (i instanceof Assign) {
+                Assign a = (Assign) i;
+
+                if (a.getValue().getValue() == 1) {
+                    variables.put(a.getVariableName(),AbstractValue.UN);
+                } else if (a.getValue().getValue() == 0) {
+                    variables.put(a.getVariableName(),AbstractValue.ZERO);
+                } else {
+                    variables.put(a.getVariableName(), AbstractValue.UNDEFINED);
+                    newInstructions.add(i);
+                }
+
+            } else {
+                AssignOperator ao = (AssignOperator) i;
+
+                AbstractValue operande1 = AbstractValue.UNDEFINED;
+                AbstractValue operande2 = AbstractValue.UNDEFINED;
+
+                if (ao.getOperand1() instanceof Variable) {
+                    operande1 = variables.getOrDefault(((Variable) ao.getOperand1()).getName(), AbstractValue.UNDEFINED);
+                } else {
+                    if (ao.getOperand1().getValue() == 0) {
+                        operande1 = AbstractValue.ZERO;
+                    } else if (ao.getOperand1().getValue() == 1) {
+                        operande1 = AbstractValue.UN;
+                    }
+                }
+
+                if (ao.getOperand2() instanceof Variable) {
+                    operande2 = variables.getOrDefault(((Variable) ao.getOperand2()).getName(), AbstractValue.UNDEFINED);
+                } else {
+                    if (ao.getOperand2().getValue() == 0) {
+                        operande2 = AbstractValue.ZERO;
+                    } else if (ao.getOperand2().getValue() == 1) {
+                        operande2 = AbstractValue.UN;
+                    }
+                }
+
+                AbstractValue result = AbstractValue.UNDEFINED;
+                switch (ao.getOperator()) {
+                    case "+":
+                        if (operande1 == AbstractValue.ZERO && operande2 == AbstractValue.ZERO) {
+                            result = AbstractValue.ZERO;
+                        } else if ((operande1 == AbstractValue.ZERO && operande2 == AbstractValue.UN)
+                                || (operande1 == AbstractValue.UN && operande2 == AbstractValue.ZERO)) {
+                            result = AbstractValue.UN;
+                        }
+                        break;
+                    case "-":
+                        if ((operande1 == AbstractValue.ZERO && operande2 == AbstractValue.ZERO)
+                                || (operande1 == AbstractValue.UN && operande2 == AbstractValue.UN)) {
+                            result = AbstractValue.ZERO;
+                        } else if (operande1 == AbstractValue.UN && operande2 == AbstractValue.ZERO) {
+                            result = AbstractValue.UN;
+                        }
+                        break;
+                    case "*":
+                        if (operande1 == AbstractValue.ZERO || operande2 == AbstractValue.ZERO) {
+                            result = AbstractValue.ZERO;
+                        } else if (operande1 == AbstractValue.UN && operande2 == AbstractValue.UN) {
+                            result = AbstractValue.UN;
+                        }
+                        break;
+                }
+
+                if (result == AbstractValue.UNDEFINED) {
+                    newInstructions.add(i);
+                }
+                variables.put(ao.getVariableName(), result);
+            }
+        }
+
+        try {
+
+            FileWriter fileWriter = new FileWriter("./ressources/opt_prog.txt");
+            if (variables.containsKey("x")) {
+                if (variables.get("x") == AbstractValue.ZERO) {
+                    fileWriter.write("x = 0\n");
+                } else if (variables.get("x") == AbstractValue.UN) {
+                    fileWriter.write("x = 1\n");
+                } else {
+                    for (Instruction i: newInstructions) {
+                        fileWriter.write(i.toString() + "\n");
+                    }
+                }
+
+            } else {
+                fileWriter.write("x = 0\n");
+            }
+            fileWriter.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

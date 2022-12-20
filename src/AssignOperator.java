@@ -29,6 +29,20 @@ class AssignOperator extends Instruction{
 
     @Override
     public String toString() {
-        return lhs + "=" + t0 + op + t1;
+        String var1;
+        String var2;
+
+        if (t0 instanceof Variable) {
+            var1 = ((Variable) t0).getName();
+        } else {
+            var1 = ((Entier)t0).getValue() + "";
+        }
+
+        if (t1 instanceof Variable) {
+            var2 = ((Variable) t1).getName();
+        } else {
+            var2 =  ((Entier)t1).getValue() + "";
+        }
+        return lhs + "=" + var1 + op + var2;
     }
 }
