@@ -1,4 +1,5 @@
 class Entier extends Value {
+
     Integer x;
     Entier(Integer s){
         x = s;
@@ -7,5 +8,10 @@ class Entier extends Value {
     @Override
     public String toString(){
         return "Entier " +  x.toString();
+    }
+
+    @Override
+    public int getValue() {
+        return x;
     }
 }

@@ -4,6 +4,10 @@ class Variable extends Value{
 	    var = s;
     }
 
+    public String getName() {
+        return var;
+    }
+
     @Override
     public String toString(){
 	    return "Variable " + var;
