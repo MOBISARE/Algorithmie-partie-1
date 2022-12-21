@@ -37,7 +37,16 @@ public class Evaluateur {
             if (instruction instanceof Assign) {
                 // C'est une instruction d'affectation simple
                 Assign assignment = (Assign) instruction;
-                variables.put(assignment.getVariableName(), assignment.getValue());
+                if (assignment.getValue() instanceof Variable) {
+                    Variable var = (Variable) assignment.getValue();
+                    if (variables.containsKey(var.getName())) {
+                        variables.put(assignment.getVariableName(), variables.get(var.getName()));
+                    } else {
+                        variables.put(assignment.getVariableName(), new Entier(0));
+                    }
+                } else {
+                    variables.put(assignment.getVariableName(), assignment.getValue());
+                }
             } else if (instruction instanceof AssignOperator) {
                 // C'est une opération arithmétique
                 AssignOperator arithmetic = (AssignOperator) instruction;
@@ -68,12 +77,12 @@ public class Evaluateur {
                         result = operande1 + operande2;
                         break;
                     case "*":
-//                        while (operande2 > 0) {
-//                            if (operande2 % 2 != 0) result = (result + operande1);
-//                            operande2 >>= 1;
-//                            operande1 = (2*operande1);
-//                        }
-                        result = operande1 * operande2;
+                        while (operande2 > 0) {
+                            if (operande2 % 2 != 0) result = (result + operande1);
+                            operande2 >>= 1;
+                            operande1 = (2*operande1);
+                        }
+                        //result = operande1 * operande2;
                         break;
                     case "-":
                         result = operande1 - operande2;
