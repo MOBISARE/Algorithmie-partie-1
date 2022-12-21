@@ -215,4 +215,75 @@ public class Evaluateur {
             throw new RuntimeException(e);
         }
     }
+
+    public int simplifyEvaluate() {
+        int p = RandomPrime.randomPrime();
+        HashMap<String, Value> variables = new HashMap<>();
+
+        // Répéter jusqu'à ce que le compteur d'instruction dépasse la longueur du programme
+        for (Instruction instruction : instructions) {
+
+            final int result;
+
+            if (instruction instanceof Assign) {
+                // C'est une instruction d'affectation simple
+                Assign assignment = (Assign) instruction;
+                variables.put(assignment.getVariableName(), assignment.getValue());
+            } else if (instruction instanceof AssignOperator) {
+                // C'est une opération arithmétique
+                AssignOperator arithmetic = (AssignOperator) instruction;
+                final int operande1 = createOperande(arithmetic.getOperand1(), variables);
+                final int operande2 = createOperande(arithmetic.getOperand2(), variables);
+
+                switch (arithmetic.getOperator()) {
+                    case "+":
+                        result = operande1 + operande2;
+                        break;
+                    case "*":
+                        int o1 = operande1;
+                        int o2 = operande2;
+                        int r = 0;
+                        while (o2 != 0) {
+                            if ((o2 & 1) == 1){
+                                r = (r + o1) % p;
+                            }
+                            o2 >>= 1;
+                            o1 = (2 * o1) % p;
+                        }
+                        result = r;
+                        break;
+                    case "-":
+                        result = operande1 - operande2;
+                        break;
+
+                    default:
+                        throw new IllegalStateException("Opérateur inexistant");
+                }
+                variables.put(arithmetic.getVariableName(), new Entier(result));
+            }
+        }
+
+        // Renvoyez la valeur de la variable x
+        if (variables.containsKey("x")) {
+            return variables.get("x").getValue();
+        } else {
+            return 0;
+        }
+    }
+
+
+    private int createOperande(Value value, HashMap<String, Value> variables) {
+        final int operande;
+        if (value instanceof Variable) {
+            Variable v = (Variable) value;
+            if (variables.containsKey(v.getName())) {
+                operande = variables.get(v.getName()).getValue();
+            } else {
+                throw new IllegalStateException("Variable non initialisée");
+            }
+        } else {
+            operande = value.getValue();
+        }
+        return operande;
+    }
 }
